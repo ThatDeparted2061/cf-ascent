@@ -1,17 +1,16 @@
 // The "big-tech interview blueprint".
 //
-// Rather than naming individual companies (their question banks are private /
-// premium-locked), this encodes the *patterns* that top-company SDE interviews
-// actually test — the well-established Blind-75 / NeetCode-150 / Grind model.
+// Models the *patterns* that top-company SDE interviews actually test (the
+// Blind-75 / NeetCode-150 / Grind model), not individual companies. Each section
+// carries an importance weight, a readiness target, LeetCode tag mappings, and a
+// curated, ordered problem set that spans two tracks:
 //
-// Each section has:
-//   importance  — how heavily big-tech interviews weight it (0..1)
-//   target      — roughly how many solved problems signals interview-readiness
-//   lcTags      — LeetCode tag slugs used to estimate your mastery
-//   problems    — a curated, ordered (easy→hard) set of canonical problems
+//   • Foundation — Easy → Medium build-up to learn the pattern.
+//   • Advanced   — mostly Hard + a few above-average ("adv") Mediums, for full
+//                  depth so that finishing them means you've truly covered the topic.
 //
-// Sections are listed in a sensible *learning order* (foundational → advanced),
-// which is also the default curriculum order for the prep plan.
+// Each problem: { title, slug, difficulty: 'Easy'|'Medium'|'Hard', adv?: true }.
+// Arrays are ordered Easy → Medium → (adv Medium) → Hard.
 
 export const SECTIONS = [
   {
@@ -21,8 +20,7 @@ export const SECTIONS = [
     importance: 1.0,
     target: 30,
     lcTags: ['array', 'hash-table'],
-    blurb:
-      'The bedrock of coding interviews. Hash maps/sets for O(1) lookups, prefix sums, frequency counting — appears in nearly every onsite.',
+    blurb: 'Hash maps/sets, prefix sums, frequency counting — the bedrock of almost every onsite.',
     problems: [
       { title: 'Two Sum', slug: 'two-sum', difficulty: 'Easy' },
       { title: 'Contains Duplicate', slug: 'contains-duplicate', difficulty: 'Easy' },
@@ -31,7 +29,12 @@ export const SECTIONS = [
       { title: 'Top K Frequent Elements', slug: 'top-k-frequent-elements', difficulty: 'Medium' },
       { title: 'Product of Array Except Self', slug: 'product-of-array-except-self', difficulty: 'Medium' },
       { title: 'Encode and Decode Strings', slug: 'encode-and-decode-strings', difficulty: 'Medium' },
-      { title: 'Longest Consecutive Sequence', slug: 'longest-consecutive-sequence', difficulty: 'Medium' },
+      { title: 'Sort Colors', slug: 'sort-colors', difficulty: 'Medium' },
+      { title: 'Longest Consecutive Sequence', slug: 'longest-consecutive-sequence', difficulty: 'Medium', adv: true },
+      { title: 'Subarray Sum Equals K', slug: 'subarray-sum-equals-k', difficulty: 'Medium', adv: true },
+      { title: 'First Missing Positive', slug: 'first-missing-positive', difficulty: 'Hard' },
+      { title: 'Count of Smaller Numbers After Self', slug: 'count-of-smaller-numbers-after-self', difficulty: 'Hard' },
+      { title: 'Max Points on a Line', slug: 'max-points-on-a-line', difficulty: 'Hard' },
     ],
   },
   {
@@ -41,12 +44,13 @@ export const SECTIONS = [
     importance: 0.8,
     target: 12,
     lcTags: ['two-pointers'],
-    blurb: 'Opposite-end or fast/slow pointers to turn O(n²) scans into O(n). Strings, sorted arrays, palindromes.',
+    blurb: 'Opposite-end and fast/slow pointers that turn O(n²) scans into O(n).',
     problems: [
       { title: 'Valid Palindrome', slug: 'valid-palindrome', difficulty: 'Easy' },
       { title: 'Two Sum II (Sorted)', slug: 'two-sum-ii-input-array-is-sorted', difficulty: 'Medium' },
       { title: '3Sum', slug: '3sum', difficulty: 'Medium' },
       { title: 'Container With Most Water', slug: 'container-with-most-water', difficulty: 'Medium' },
+      { title: '4Sum', slug: '4sum', difficulty: 'Medium', adv: true },
       { title: 'Trapping Rain Water', slug: 'trapping-rain-water', difficulty: 'Hard' },
     ],
   },
@@ -57,14 +61,17 @@ export const SECTIONS = [
     importance: 0.8,
     target: 10,
     lcTags: ['sliding-window'],
-    blurb: 'Expand/contract a window for subarray and substring optimization. A staple of medium-level onsite rounds.',
+    blurb: 'Expand/contract a window for subarray and substring optimization.',
     problems: [
       { title: 'Best Time to Buy and Sell Stock', slug: 'best-time-to-buy-and-sell-stock', difficulty: 'Easy' },
       { title: 'Longest Substring Without Repeating Characters', slug: 'longest-substring-without-repeating-characters', difficulty: 'Medium' },
       { title: 'Longest Repeating Character Replacement', slug: 'longest-repeating-character-replacement', difficulty: 'Medium' },
       { title: 'Permutation in String', slug: 'permutation-in-string', difficulty: 'Medium' },
+      { title: 'Fruit Into Baskets', slug: 'fruit-into-baskets', difficulty: 'Medium' },
+      { title: 'Max Consecutive Ones III', slug: 'max-consecutive-ones-iii', difficulty: 'Medium', adv: true },
       { title: 'Minimum Window Substring', slug: 'minimum-window-substring', difficulty: 'Hard' },
       { title: 'Sliding Window Maximum', slug: 'sliding-window-maximum', difficulty: 'Hard' },
+      { title: 'Substring with Concatenation of All Words', slug: 'substring-with-concatenation-of-all-words', difficulty: 'Hard' },
     ],
   },
   {
@@ -74,7 +81,7 @@ export const SECTIONS = [
     importance: 0.7,
     target: 10,
     lcTags: ['stack', 'monotonic-stack'],
-    blurb: 'Parentheses, monotonic stacks, expression evaluation. Frequent warm-up and medium questions.',
+    blurb: 'Parentheses, monotonic stacks, expression evaluation.',
     problems: [
       { title: 'Valid Parentheses', slug: 'valid-parentheses', difficulty: 'Easy' },
       { title: 'Min Stack', slug: 'min-stack', difficulty: 'Medium' },
@@ -82,7 +89,12 @@ export const SECTIONS = [
       { title: 'Generate Parentheses', slug: 'generate-parentheses', difficulty: 'Medium' },
       { title: 'Daily Temperatures', slug: 'daily-temperatures', difficulty: 'Medium' },
       { title: 'Car Fleet', slug: 'car-fleet', difficulty: 'Medium' },
+      { title: 'Decode String', slug: 'decode-string', difficulty: 'Medium', adv: true },
+      { title: 'Asteroid Collision', slug: 'asteroid-collision', difficulty: 'Medium', adv: true },
       { title: 'Largest Rectangle in Histogram', slug: 'largest-rectangle-in-histogram', difficulty: 'Hard' },
+      { title: 'Maximal Rectangle', slug: 'maximal-rectangle', difficulty: 'Hard' },
+      { title: 'Basic Calculator', slug: 'basic-calculator', difficulty: 'Hard' },
+      { title: 'Longest Valid Parentheses', slug: 'longest-valid-parentheses', difficulty: 'Hard' },
     ],
   },
   {
@@ -92,7 +104,7 @@ export const SECTIONS = [
     importance: 0.85,
     target: 12,
     lcTags: ['binary-search'],
-    blurb: 'Search sorted spaces and "binary search on the answer". High-signal for problem-solving ability.',
+    blurb: 'Search sorted spaces and "binary search on the answer".',
     problems: [
       { title: 'Binary Search', slug: 'binary-search', difficulty: 'Easy' },
       { title: 'Search a 2D Matrix', slug: 'search-a-2d-matrix', difficulty: 'Medium' },
@@ -100,6 +112,9 @@ export const SECTIONS = [
       { title: 'Find Minimum in Rotated Sorted Array', slug: 'find-minimum-in-rotated-sorted-array', difficulty: 'Medium' },
       { title: 'Search in Rotated Sorted Array', slug: 'search-in-rotated-sorted-array', difficulty: 'Medium' },
       { title: 'Time Based Key-Value Store', slug: 'time-based-key-value-store', difficulty: 'Medium' },
+      { title: 'Capacity to Ship Packages Within D Days', slug: 'capacity-to-ship-packages-within-d-days', difficulty: 'Medium', adv: true },
+      { title: 'Kth Smallest Element in a Sorted Matrix', slug: 'kth-smallest-element-in-a-sorted-matrix', difficulty: 'Medium', adv: true },
+      { title: 'Split Array Largest Sum', slug: 'split-array-largest-sum', difficulty: 'Hard' },
       { title: 'Median of Two Sorted Arrays', slug: 'median-of-two-sorted-arrays', difficulty: 'Hard' },
     ],
   },
@@ -110,7 +125,7 @@ export const SECTIONS = [
     importance: 0.8,
     target: 11,
     lcTags: ['linked-list'],
-    blurb: 'Pointer manipulation, fast/slow cycles, merging. Tests careful implementation under pressure.',
+    blurb: 'Pointer manipulation, fast/slow cycles, merging.',
     problems: [
       { title: 'Reverse Linked List', slug: 'reverse-linked-list', difficulty: 'Easy' },
       { title: 'Merge Two Sorted Lists', slug: 'merge-two-sorted-lists', difficulty: 'Easy' },
@@ -120,6 +135,7 @@ export const SECTIONS = [
       { title: 'Copy List with Random Pointer', slug: 'copy-list-with-random-pointer', difficulty: 'Medium' },
       { title: 'Add Two Numbers', slug: 'add-two-numbers', difficulty: 'Medium' },
       { title: 'Find the Duplicate Number', slug: 'find-the-duplicate-number', difficulty: 'Medium' },
+      { title: 'Sort List', slug: 'sort-list', difficulty: 'Medium', adv: true },
       { title: 'Merge k Sorted Lists', slug: 'merge-k-sorted-lists', difficulty: 'Hard' },
       { title: 'Reverse Nodes in k-Group', slug: 'reverse-nodes-in-k-group', difficulty: 'Hard' },
     ],
@@ -129,9 +145,9 @@ export const SECTIONS = [
     name: 'Trees',
     tier: 'foundational',
     importance: 1.0,
-    target: 20,
+    target: 22,
     lcTags: ['tree', 'binary-tree', 'binary-search-tree'],
-    blurb: 'DFS/BFS traversals, BST properties, recursion. One of the single most-tested topics at every level.',
+    blurb: 'DFS/BFS traversals, BST properties, recursion — tested at every level.',
     problems: [
       { title: 'Invert Binary Tree', slug: 'invert-binary-tree', difficulty: 'Easy' },
       { title: 'Maximum Depth of Binary Tree', slug: 'maximum-depth-of-binary-tree', difficulty: 'Easy' },
@@ -146,8 +162,12 @@ export const SECTIONS = [
       { title: 'Validate Binary Search Tree', slug: 'validate-binary-search-tree', difficulty: 'Medium' },
       { title: 'Kth Smallest Element in a BST', slug: 'kth-smallest-element-in-a-bst', difficulty: 'Medium' },
       { title: 'Construct Tree from Preorder & Inorder', slug: 'construct-binary-tree-from-preorder-and-inorder-traversal', difficulty: 'Medium' },
+      { title: 'House Robber III', slug: 'house-robber-iii', difficulty: 'Medium', adv: true },
+      { title: 'Flatten Binary Tree to Linked List', slug: 'flatten-binary-tree-to-linked-list', difficulty: 'Medium', adv: true },
       { title: 'Binary Tree Maximum Path Sum', slug: 'binary-tree-maximum-path-sum', difficulty: 'Hard' },
       { title: 'Serialize and Deserialize Binary Tree', slug: 'serialize-and-deserialize-binary-tree', difficulty: 'Hard' },
+      { title: 'Binary Tree Cameras', slug: 'binary-tree-cameras', difficulty: 'Hard' },
+      { title: 'Vertical Order Traversal of a Binary Tree', slug: 'vertical-order-traversal-of-a-binary-tree', difficulty: 'Hard' },
     ],
   },
   {
@@ -157,7 +177,7 @@ export const SECTIONS = [
     importance: 0.7,
     target: 8,
     lcTags: ['heap-priority-queue'],
-    blurb: 'Top-K, merging streams, scheduling. Recognizing when a heap is the right tool is the key signal.',
+    blurb: 'Top-K, merging streams, scheduling — knowing when a heap fits.',
     problems: [
       { title: 'Kth Largest Element in a Stream', slug: 'kth-largest-element-in-a-stream', difficulty: 'Easy' },
       { title: 'Last Stone Weight', slug: 'last-stone-weight', difficulty: 'Easy' },
@@ -165,7 +185,10 @@ export const SECTIONS = [
       { title: 'Kth Largest Element in an Array', slug: 'kth-largest-element-in-an-array', difficulty: 'Medium' },
       { title: 'Task Scheduler', slug: 'task-scheduler', difficulty: 'Medium' },
       { title: 'Design Twitter', slug: 'design-twitter', difficulty: 'Medium' },
+      { title: 'Reorganize String', slug: 'reorganize-string', difficulty: 'Medium', adv: true },
       { title: 'Find Median from Data Stream', slug: 'find-median-from-data-stream', difficulty: 'Hard' },
+      { title: 'IPO', slug: 'ipo', difficulty: 'Hard' },
+      { title: 'Sliding Window Median', slug: 'sliding-window-median', difficulty: 'Hard' },
     ],
   },
   {
@@ -175,7 +198,7 @@ export const SECTIONS = [
     importance: 0.75,
     target: 10,
     lcTags: ['backtracking'],
-    blurb: 'Subsets, permutations, combinations, constraint search. Tests recursion fluency and pruning.',
+    blurb: 'Subsets, permutations, combinations, constraint search — recursion + pruning.',
     problems: [
       { title: 'Subsets', slug: 'subsets', difficulty: 'Medium' },
       { title: 'Combination Sum', slug: 'combination-sum', difficulty: 'Medium' },
@@ -185,7 +208,9 @@ export const SECTIONS = [
       { title: 'Word Search', slug: 'word-search', difficulty: 'Medium' },
       { title: 'Palindrome Partitioning', slug: 'palindrome-partitioning', difficulty: 'Medium' },
       { title: 'Letter Combinations of a Phone Number', slug: 'letter-combinations-of-a-phone-number', difficulty: 'Medium' },
+      { title: 'Permutations II', slug: 'permutations-ii', difficulty: 'Medium', adv: true },
       { title: 'N-Queens', slug: 'n-queens', difficulty: 'Hard' },
+      { title: 'Sudoku Solver', slug: 'sudoku-solver', difficulty: 'Hard' },
     ],
   },
   {
@@ -195,11 +220,12 @@ export const SECTIONS = [
     importance: 0.5,
     target: 4,
     lcTags: ['trie'],
-    blurb: 'Prefix trees for word lookups and autocomplete. Less common but a clear differentiator when it appears.',
+    blurb: 'Prefix trees for word lookups and autocomplete.',
     problems: [
       { title: 'Implement Trie (Prefix Tree)', slug: 'implement-trie-prefix-tree', difficulty: 'Medium' },
       { title: 'Design Add and Search Words', slug: 'design-add-and-search-words-data-structure', difficulty: 'Medium' },
       { title: 'Word Search II', slug: 'word-search-ii', difficulty: 'Hard' },
+      { title: 'Palindrome Pairs', slug: 'palindrome-pairs', difficulty: 'Hard' },
     ],
   },
   {
@@ -209,7 +235,7 @@ export const SECTIONS = [
     importance: 1.0,
     target: 18,
     lcTags: ['graph', 'depth-first-search', 'breadth-first-search', 'union-find', 'topological-sort'],
-    blurb: 'Grid DFS/BFS, topological sort, union-find, Dijkstra. Extremely common — especially at FAANG-tier onsites.',
+    blurb: 'Grid DFS/BFS, topological sort, union-find, Dijkstra — extremely common at FAANG-tier.',
     problems: [
       { title: 'Number of Islands', slug: 'number-of-islands', difficulty: 'Medium' },
       { title: 'Max Area of Island', slug: 'max-area-of-island', difficulty: 'Medium' },
@@ -219,14 +245,16 @@ export const SECTIONS = [
       { title: 'Surrounded Regions', slug: 'surrounded-regions', difficulty: 'Medium' },
       { title: 'Course Schedule', slug: 'course-schedule', difficulty: 'Medium' },
       { title: 'Course Schedule II', slug: 'course-schedule-ii', difficulty: 'Medium' },
-      { title: 'Graph Valid Tree', slug: 'graph-valid-tree', difficulty: 'Medium' },
       { title: 'Number of Connected Components', slug: 'number-of-connected-components-in-an-undirected-graph', difficulty: 'Medium' },
       { title: 'Redundant Connection', slug: 'redundant-connection', difficulty: 'Medium' },
       { title: 'Min Cost to Connect All Points', slug: 'min-cost-to-connect-all-points', difficulty: 'Medium' },
       { title: 'Network Delay Time', slug: 'network-delay-time', difficulty: 'Medium' },
-      { title: 'Cheapest Flights Within K Stops', slug: 'cheapest-flights-within-k-stops', difficulty: 'Medium' },
+      { title: 'Cheapest Flights Within K Stops', slug: 'cheapest-flights-within-k-stops', difficulty: 'Medium', adv: true },
       { title: 'Word Ladder', slug: 'word-ladder', difficulty: 'Hard' },
-      { title: 'Alien Dictionary', slug: 'alien-dictionary', difficulty: 'Hard' },
+      { title: 'Swim in Rising Water', slug: 'swim-in-rising-water', difficulty: 'Hard' },
+      { title: 'Word Ladder II', slug: 'word-ladder-ii', difficulty: 'Hard' },
+      { title: 'Critical Connections in a Network', slug: 'critical-connections-in-a-network', difficulty: 'Hard' },
+      { title: 'Reconstruct Itinerary', slug: 'reconstruct-itinerary', difficulty: 'Hard' },
     ],
   },
   {
@@ -236,7 +264,7 @@ export const SECTIONS = [
     importance: 1.0,
     target: 22,
     lcTags: ['dynamic-programming'],
-    blurb: 'The classic separator for senior/strong-hire signals. 1-D and 2-D DP, knapsack, LCS, edit distance.',
+    blurb: 'The classic strong-hire separator. 1-D and 2-D DP, knapsack, LCS, edit distance.',
     problems: [
       { title: 'Climbing Stairs', slug: 'climbing-stairs', difficulty: 'Easy' },
       { title: 'Min Cost Climbing Stairs', slug: 'min-cost-climbing-stairs', difficulty: 'Easy' },
@@ -254,9 +282,13 @@ export const SECTIONS = [
       { title: 'Longest Common Subsequence', slug: 'longest-common-subsequence', difficulty: 'Medium' },
       { title: 'Coin Change II', slug: 'coin-change-ii', difficulty: 'Medium' },
       { title: 'Target Sum', slug: 'target-sum', difficulty: 'Medium' },
-      { title: 'Edit Distance', slug: 'edit-distance', difficulty: 'Medium' },
+      { title: 'Maximal Square', slug: 'maximal-square', difficulty: 'Medium', adv: true },
+      { title: 'Edit Distance', slug: 'edit-distance', difficulty: 'Medium', adv: true },
+      { title: 'Best Time to Buy/Sell Stock III', slug: 'best-time-to-buy-and-sell-stock-iii', difficulty: 'Hard' },
       { title: 'Burst Balloons', slug: 'burst-balloons', difficulty: 'Hard' },
+      { title: 'Distinct Subsequences', slug: 'distinct-subsequences', difficulty: 'Hard' },
       { title: 'Regular Expression Matching', slug: 'regular-expression-matching', difficulty: 'Hard' },
+      { title: 'Wildcard Matching', slug: 'wildcard-matching', difficulty: 'Hard' },
     ],
   },
   {
@@ -266,7 +298,7 @@ export const SECTIONS = [
     importance: 0.6,
     target: 8,
     lcTags: ['greedy'],
-    blurb: 'Local-optimal choices and exchange arguments. Often disguised; proving correctness is the hard part.',
+    blurb: 'Local-optimal choices and exchange arguments — often disguised.',
     problems: [
       { title: 'Maximum Subarray', slug: 'maximum-subarray', difficulty: 'Medium' },
       { title: 'Jump Game', slug: 'jump-game', difficulty: 'Medium' },
@@ -276,6 +308,7 @@ export const SECTIONS = [
       { title: 'Merge Triplets to Form Target', slug: 'merge-triplets-to-form-target-triplet', difficulty: 'Medium' },
       { title: 'Partition Labels', slug: 'partition-labels', difficulty: 'Medium' },
       { title: 'Valid Parenthesis String', slug: 'valid-parenthesis-string', difficulty: 'Medium' },
+      { title: 'Candy', slug: 'candy', difficulty: 'Hard' },
     ],
   },
   {
@@ -285,14 +318,15 @@ export const SECTIONS = [
     importance: 0.65,
     target: 6,
     lcTags: ['sorting'],
-    blurb: 'Merge/insert/overlap logic on sorted intervals. A compact, very interview-frequent pattern.',
+    blurb: 'Merge/insert/overlap logic on sorted intervals — compact and very frequent.',
     problems: [
+      { title: 'Meeting Rooms', slug: 'meeting-rooms', difficulty: 'Easy' },
       { title: 'Insert Interval', slug: 'insert-interval', difficulty: 'Medium' },
       { title: 'Merge Intervals', slug: 'merge-intervals', difficulty: 'Medium' },
       { title: 'Non-overlapping Intervals', slug: 'non-overlapping-intervals', difficulty: 'Medium' },
-      { title: 'Meeting Rooms', slug: 'meeting-rooms', difficulty: 'Easy' },
       { title: 'Meeting Rooms II', slug: 'meeting-rooms-ii', difficulty: 'Medium' },
       { title: 'Minimum Interval to Include Each Query', slug: 'minimum-interval-to-include-each-query', difficulty: 'Hard' },
+      { title: 'The Skyline Problem', slug: 'the-skyline-problem', difficulty: 'Hard' },
     ],
   },
   {
@@ -302,15 +336,16 @@ export const SECTIONS = [
     importance: 0.45,
     target: 7,
     lcTags: ['math', 'geometry', 'matrix'],
-    blurb: 'Matrix manipulation and number tricks. Lower frequency, but matrix questions recur in phone screens.',
+    blurb: 'Matrix manipulation and number tricks — recurring in phone screens.',
     problems: [
+      { title: 'Happy Number', slug: 'happy-number', difficulty: 'Easy' },
+      { title: 'Plus One', slug: 'plus-one', difficulty: 'Easy' },
       { title: 'Rotate Image', slug: 'rotate-image', difficulty: 'Medium' },
       { title: 'Spiral Matrix', slug: 'spiral-matrix', difficulty: 'Medium' },
       { title: 'Set Matrix Zeroes', slug: 'set-matrix-zeroes', difficulty: 'Medium' },
-      { title: 'Happy Number', slug: 'happy-number', difficulty: 'Easy' },
-      { title: 'Plus One', slug: 'plus-one', difficulty: 'Easy' },
       { title: 'Pow(x, n)', slug: 'powx-n', difficulty: 'Medium' },
-      { title: 'Multiply Strings', slug: 'multiply-strings', difficulty: 'Medium' },
+      { title: 'Multiply Strings', slug: 'multiply-strings', difficulty: 'Medium', adv: true },
+      { title: 'Integer to English Words', slug: 'integer-to-english-words', difficulty: 'Hard' },
     ],
   },
   {
@@ -320,7 +355,7 @@ export const SECTIONS = [
     importance: 0.5,
     target: 6,
     lcTags: ['bit-manipulation'],
-    blurb: 'XOR tricks, bit counting, masks. Quick wins that occasionally headline a phone screen.',
+    blurb: 'XOR tricks, bit counting, masks — quick phone-screen wins.',
     problems: [
       { title: 'Single Number', slug: 'single-number', difficulty: 'Easy' },
       { title: 'Number of 1 Bits', slug: 'number-of-1-bits', difficulty: 'Easy' },
@@ -328,6 +363,7 @@ export const SECTIONS = [
       { title: 'Reverse Bits', slug: 'reverse-bits', difficulty: 'Easy' },
       { title: 'Missing Number', slug: 'missing-number', difficulty: 'Easy' },
       { title: 'Sum of Two Integers', slug: 'sum-of-two-integers', difficulty: 'Medium' },
+      { title: 'Reverse Integer', slug: 'reverse-integer', difficulty: 'Medium' },
     ],
   },
   {
@@ -337,12 +373,13 @@ export const SECTIONS = [
     importance: 0.6,
     target: 5,
     lcTags: ['design'],
-    blurb: 'LRU/LFU caches, O(1) structures, iterators. Common as the "build this class" round at many companies.',
+    blurb: 'LRU/LFU caches, O(1) structures, iterators — the "build this class" round.',
     problems: [
       { title: 'Implement Queue using Stacks', slug: 'implement-queue-using-stacks', difficulty: 'Easy' },
       { title: 'Insert Delete GetRandom O(1)', slug: 'insert-delete-getrandom-o1', difficulty: 'Medium' },
       { title: 'LRU Cache', slug: 'lru-cache', difficulty: 'Medium' },
       { title: 'LFU Cache', slug: 'lfu-cache', difficulty: 'Hard' },
+      { title: 'All O`one Data Structure', slug: 'all-oone-data-structure', difficulty: 'Hard' },
     ],
   },
 ]
@@ -353,8 +390,17 @@ export function lcProblemUrl(slug) {
   return `https://leetcode.com/problems/${slug}/`
 }
 
-// Flat, de-duplicated list of every blueprint problem (first occurrence wins),
-// each annotated with its section. This is the universe the prep plan draws on.
+// Problems for a given prep level:
+//   foundation → Easy + Medium (the build-up)
+//   advanced   → Hard + flagged above-average ("adv") Mediums
+export function problemsForLevel(section, level) {
+  if (level === 'advanced') {
+    return section.problems.filter((p) => p.difficulty === 'Hard' || p.adv)
+  }
+  return section.problems.filter((p) => p.difficulty !== 'Hard')
+}
+
+// Flat, de-duplicated list of every blueprint problem (first occurrence wins).
 export function getAllProblems() {
   const seen = new Set()
   const out = []
@@ -362,12 +408,7 @@ export function getAllProblems() {
     for (const p of s.problems) {
       if (seen.has(p.slug)) continue
       seen.add(p.slug)
-      out.push({
-        ...p,
-        sectionId: s.id,
-        sectionName: s.name,
-        url: lcProblemUrl(p.slug),
-      })
+      out.push({ ...p, sectionId: s.id, sectionName: s.name, url: lcProblemUrl(p.slug) })
     }
   }
   return out

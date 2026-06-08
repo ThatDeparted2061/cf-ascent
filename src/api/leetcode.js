@@ -60,8 +60,11 @@ const CONTEST_Q = `query contest($username: String!) {
   }
 }`
 
-const RECENT_Q = `query recent($username: String!, $limit: Int!) {
-  recentAcSubmissionList(username: $username, limit: $limit) { id title titleSlug timestamp }
+// The only public way to learn which specific problems a user has solved is the
+// "recent accepted" list. We request a large limit so it covers the full solve
+// history for the vast majority of users.
+const SOLVED_Q = `query solved($username: String!, $limit: Int!) {
+  recentAcSubmissionList(username: $username, limit: $limit) { titleSlug }
 }`
 
 export async function getProfile(username) {
@@ -78,10 +81,11 @@ export async function getContest(username) {
   }
 }
 
-export async function getRecent(username, limit = 20) {
+export async function getSolvedSlugs(username, limit = 2000) {
   try {
-    const d = await gql(RECENT_Q, { username, limit })
-    return d.recentAcSubmissionList || []
+    const d = await gql(SOLVED_Q, { username, limit })
+    const slugs = (d.recentAcSubmissionList || []).map((s) => s.titleSlug)
+    return [...new Set(slugs)]
   } catch {
     return []
   }
@@ -94,10 +98,10 @@ export async function loadEverything(username, onProgress = () => {}) {
   onProgress('Fetching contest history…')
   const contest = await getContest(username)
 
-  onProgress('Fetching recent solves…')
-  const recent = await getRecent(username, 20)
+  onProgress('Fetching your solved problems…')
+  const solved = await getSolvedSlugs(username, 2000)
 
-  return { username, profile, contest, recent }
+  return { username, profile, contest, solved }
 }
 
 export function lcProblemUrl(slug) {

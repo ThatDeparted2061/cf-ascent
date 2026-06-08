@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { loadEverything as loadCf } from './api/codeforces.js'
 import { loadEverything as loadLc } from './api/leetcode.js'
 import { analyzeProfile } from './lib/analysis.js'
@@ -6,7 +6,7 @@ import { generatePlan } from './lib/recommender.js'
 import { analyzeLeetCode } from './lib/lcAnalysis.js'
 import { generateLcPlan } from './lib/lcRecommender.js'
 import { clamp, round100 } from './lib/constants.js'
-import { getLastHandle, setLastHandle } from './lib/storage.js'
+import { getLastHandle, setLastHandle, saveSession, loadSession, clearSession } from './lib/storage.js'
 
 import Nav from './components/Nav.jsx'
 import Footer from './components/Footer.jsx'
@@ -20,19 +20,49 @@ function defaultCfParams(a) {
   const target = clamp(round100(start + 400), start + 100, 3500)
   return { start, target, days: 30, perDay: 3, ramp: 'gentle' }
 }
-const defaultLcParams = () => ({ order: 'curriculum', perDay: 4, includeHard: true })
+const defaultLcParams = () => ({ level: 'foundation', days: 30 })
 
 export default function App() {
-  const [platform, setPlatform] = useState('cf') // landing toggle
+  const [platform, setPlatform] = useState('cf')
   const [status, setStatus] = useState('idle') // idle | loading | ready | error
   const [loadingMsg, setLoadingMsg] = useState('')
   const [error, setError] = useState(null)
   const [resultPlatform, setResultPlatform] = useState('cf')
 
-  // Codeforces result state
   const [cf, setCf] = useState(null) // { analysis, problems, params, plan }
-  // LeetCode result state
-  const [lc, setLc] = useState(null) // { analysis, params, plan }
+  const [lc, setLc] = useState(null) // { analysis, data, params, plan }
+
+  // ---- restore the last session on refresh ----
+  useEffect(() => {
+    const s = loadSession()
+    if (!s) return
+    setPlatform(s.platform)
+    ;(async () => {
+      try {
+        if (s.platform === 'lc' && s.data) {
+          const analysis = analyzeLeetCode({ username: s.handle, ...s.data })
+          const params = s.params || defaultLcParams()
+          const plan = generateLcPlan(analysis, params)
+          setLc({ analysis, data: s.data, params, plan })
+          setResultPlatform('lc')
+          setStatus('ready')
+        } else if (s.platform === 'cf') {
+          setStatus('loading')
+          setLoadingMsg('Restoring your last session…')
+          const data = await loadCf(s.handle, setLoadingMsg)
+          const analysis = analyzeProfile(data)
+          const params = s.params || defaultCfParams(analysis)
+          const plan = generatePlan(analysis, data.problems, params)
+          setCf({ analysis, problems: data.problems, params, plan })
+          setResultPlatform('cf')
+          setStatus('ready')
+        }
+      } catch {
+        setStatus('idle')
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const analyze = useCallback(
     async (handle) => {
@@ -52,6 +82,7 @@ export default function App() {
           }
           setCf({ analysis, problems: data.problems, params, plan })
           setResultPlatform('cf')
+          saveSession({ platform: 'cf', handle, params }) // re-fetch on restore (problemset is large)
         } else {
           const data = await loadLc(handle, setLoadingMsg)
           setLoadingMsg('Scoring interview readiness…')
@@ -63,8 +94,9 @@ export default function App() {
           } catch {
             plan = null
           }
-          setLc({ analysis, params, plan })
+          setLc({ analysis, data, params, plan })
           setResultPlatform('lc')
+          saveSession({ platform: 'lc', handle, data, params }) // cache data for instant restore
         }
         setStatus('ready')
         setLastHandle(handle)
@@ -94,6 +126,7 @@ export default function App() {
         plan = null
       }
       setCf((prev) => ({ ...prev, params, plan }))
+      saveSession({ platform: 'cf', handle: cf.analysis.handle, params })
     },
     [cf],
   )
@@ -101,7 +134,7 @@ export default function App() {
   const onGenerateLc = useCallback(
     (draft) => {
       if (!lc) return
-      const params = { order: draft.order, perDay: Number(draft.perDay), includeHard: !!draft.includeHard }
+      const params = { level: draft.level, days: Number(draft.days) }
       let plan = null
       try {
         plan = generateLcPlan(lc.analysis, params)
@@ -109,6 +142,7 @@ export default function App() {
         plan = null
       }
       setLc((prev) => ({ ...prev, params, plan }))
+      saveSession({ platform: 'lc', handle: lc.analysis.username, data: lc.data, params })
     },
     [lc],
   )
@@ -116,6 +150,7 @@ export default function App() {
   const reset = useCallback(() => {
     setStatus('idle')
     setError(null)
+    clearSession()
   }, [])
 
   return (

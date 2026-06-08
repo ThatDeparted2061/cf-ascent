@@ -33,6 +33,28 @@ export function setDone(signature, doneSet) {
   writeJSON(PROGRESS_KEY, all)
 }
 
+// ---- last session (so a browser refresh restores the dashboard) ----
+const SESSION_KEY = 'cf_ascent_session_v1'
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 21 // 21 days
+
+export function saveSession(session) {
+  writeJSON(SESSION_KEY, { ...session, ts: Date.now() })
+}
+
+export function loadSession() {
+  const s = readJSON(SESSION_KEY, null)
+  if (!s || !s.ts || Date.now() - s.ts > SESSION_TTL_MS) return null
+  return s
+}
+
+export function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
 export function getLastHandle() {
   try {
     return localStorage.getItem(HANDLE_KEY) || ''

@@ -21,7 +21,7 @@ function readinessBand(score) {
   return { label: 'Strong-hire ready', tone: 'green', note: 'Senior-level breadth and depth.' }
 }
 
-export function analyzeLeetCode({ username, profile, contest, recent }) {
+export function analyzeLeetCode({ username, profile, contest, solved }) {
   const mu = profile.matchedUser
   const ac = diffMap(mu.submitStatsGlobal?.acSubmissionNum)
   const totalSub = diffMap(mu.submitStatsGlobal?.totalSubmissionNum)
@@ -106,7 +106,7 @@ export function analyzeLeetCode({ username, profile, contest, recent }) {
     .filter((h) => h.attended)
     .map((h, i) => ({ index: i, rating: Math.round(h.rating), title: h.contest?.title, time: h.contest?.startTime }))
 
-  const recentSolvedSlugs = new Set((recent || []).map((r) => r.titleSlug))
+  const solvedSlugs = new Set(solved || [])
 
   const easyShare = totalSolved ? byDifficulty.Easy.solved / totalSolved : 0
   const easyHeavy = easyShare > 0.55 && byDifficulty.Medium.solved < 80
@@ -139,6 +139,6 @@ export function analyzeLeetCode({ username, profile, contest, recent }) {
           history,
         }
       : { rating: null, history },
-    recentSolvedSlugs,
+    solvedSlugs,
   }
 }

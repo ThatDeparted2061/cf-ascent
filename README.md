@@ -9,11 +9,12 @@ from the landing page:
   gradually and front-loads your weak topics.
 - **LeetCode** — enter a username and get a **big-tech interview-readiness score**,
   a section-by-section comparison against the patterns top companies actually
-  test, weak-section detection, and a **full prep plan** covering every topic
-  (curriculum order or weak-first) with a day-by-day schedule.
+  test, weak-section detection, and a **prep plan** at a **Foundation** or
+  **Advanced** level that hides problems you've already solved and schedules the
+  rest across the number of days you choose.
 
-Fully client-side React (no sign-in, no keys). Progress is saved locally; plans
-export to CSV.
+Fully client-side React (no sign-in, no keys). Your last session and progress are
+saved in the browser (a refresh restores the dashboard); plans export to CSV.
 
 ---
 
@@ -56,10 +57,17 @@ ordered set of canonical problems (~143 total).
 - Contest rating history and standing.
 
 ### Prep plan (`src/lib/lcRecommender.js`)
-A full-coverage plan over every section — in **curriculum order** (foundational →
-advanced) or **weak-first** (attack your gaps), optionally Easy/Medium only — with
-a **day-by-day schedule** at a pace you set. Recently-solved problems are
-pre-checked; progress is saved locally; everything exports to CSV.
+You pick a **level** and a **number of days**:
+
+- **Foundation** — each pattern walked up from Easy → Medium to build fundamentals.
+- **Advanced** — mostly Hard plus above-average ("adv") Mediums, so finishing a
+  topic means you've genuinely covered it.
+
+Problems you've **already solved on LeetCode are excluded** from the to-do list
+(nothing you've done shows up as an open task) and surfaced separately,
+pre-marked, via a "Show solved" toggle. Topics are ordered **weak/important
+first**, and the to-do problems are scheduled to **fit within your chosen days**.
+Progress is saved locally; everything exports to CSV.
 
 > All scores are heuristics encoding common interview wisdom — a strong guide,
 > not an oracle.
@@ -145,6 +153,11 @@ cf-ascent/
 - LeetCode has no official public API; Ascent uses its public GraphQL endpoint
   through a proxy. Section mastery is estimated from per-tag solved counts, so
   it's a strong approximation, not an exact per-problem audit.
+- Your solved set comes from LeetCode's "recent accepted" list (requested at a
+  large limit). This covers all solves for the vast majority of users; if you've
+  solved more than the cap, the oldest solves may not be detected.
+- Sign-in / cloud sync is intentionally not built yet — caching is local to the
+  browser for now (a refresh restores your last session and progress).
 - Codeforces section "importance" and "skill", and LeetCode readiness, are
   heuristic.
 - Not affiliated with Codeforces or LeetCode. Reads only public data.
