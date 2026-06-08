@@ -95,24 +95,6 @@ git remote add origin https://github.com/<your-username>/cf-ascent.git
 git push -u origin main
 ```
 
-### Deploy on Netlify
-
-**Option A — connect the repo (recommended):**
-
-1. On [Netlify](https://app.netlify.com), *Add new site → Import an existing
-   project* and pick your GitHub repo.
-2. Netlify reads `netlify.toml` automatically:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-   - Functions directory: `netlify/functions`
-3. Deploy. Done.
-
-**Option B — drag & drop:** run `npm run build` and drag the `dist/` folder onto
-the Netlify dashboard. (The proxy function won't be included this way, but direct
-Codeforces API calls work in the browser anyway.)
-
----
-
 ## Project structure
 
 ```
