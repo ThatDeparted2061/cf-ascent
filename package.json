@@ -1,0 +1,20 @@
+{
+  "name": "cf-ascent",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Ascent — a Codeforces practice planner that analyzes any handle and builds a personalized, day-by-day problem set to climb from your current rating to a target.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}

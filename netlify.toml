@@ -1,0 +1,20 @@
+# Netlify configuration for Ascent
+# Static SPA build + a serverless function that proxies the Codeforces API
+# (used only as an automatic fallback if a direct browser call is ever blocked).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+# Single-page-app routing: send everything that isn't a real file or a
+# function to index.html so the client router/state handles it.
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
