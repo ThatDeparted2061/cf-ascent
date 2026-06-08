@@ -1,7 +1,10 @@
 import { useCallback, useState } from 'react'
-import { loadEverything } from './api/codeforces.js'
+import { loadEverything as loadCf } from './api/codeforces.js'
+import { loadEverything as loadLc } from './api/leetcode.js'
 import { analyzeProfile } from './lib/analysis.js'
 import { generatePlan } from './lib/recommender.js'
+import { analyzeLeetCode } from './lib/lcAnalysis.js'
+import { generateLcPlan } from './lib/lcRecommender.js'
 import { clamp, round100 } from './lib/constants.js'
 import { getLastHandle, setLastHandle } from './lib/storage.js'
 
@@ -9,59 +12,74 @@ import Nav from './components/Nav.jsx'
 import Footer from './components/Footer.jsx'
 import HandleForm from './components/HandleForm.jsx'
 import Loader from './components/Loader.jsx'
-import ProfileCard from './components/ProfileCard.jsx'
-import StatGrid from './components/StatGrid.jsx'
-import { RatingBars, RatingHistoryChart, TagRadar } from './components/Charts.jsx'
-import Analysis from './components/Analysis.jsx'
-import PlanControls from './components/PlanControls.jsx'
-import StudyPlan from './components/StudyPlan.jsx'
+import CfDashboard from './components/CfDashboard.jsx'
+import LcDashboard from './components/lc/LcDashboard.jsx'
 
-function defaultParams(a) {
+function defaultCfParams(a) {
   const start = a.suggestedStart
   const target = clamp(round100(start + 400), start + 100, 3500)
   return { start, target, days: 30, perDay: 3, ramp: 'gentle' }
 }
+const defaultLcParams = () => ({ order: 'curriculum', perDay: 4, includeHard: true })
 
 export default function App() {
+  const [platform, setPlatform] = useState('cf') // landing toggle
   const [status, setStatus] = useState('idle') // idle | loading | ready | error
   const [loadingMsg, setLoadingMsg] = useState('')
   const [error, setError] = useState(null)
+  const [resultPlatform, setResultPlatform] = useState('cf')
 
-  const [analysis, setAnalysis] = useState(null)
-  const [problems, setProblems] = useState(null)
-  const [planParams, setPlanParams] = useState(null)
-  const [plan, setPlan] = useState(null)
+  // Codeforces result state
+  const [cf, setCf] = useState(null) // { analysis, problems, params, plan }
+  // LeetCode result state
+  const [lc, setLc] = useState(null) // { analysis, params, plan }
 
-  const analyze = useCallback(async (handle) => {
-    setStatus('loading')
-    setError(null)
-    try {
-      const data = await loadEverything(handle, setLoadingMsg)
-      setLoadingMsg('Analyzing profile…')
-      const a = analyzeProfile(data)
-      const params = defaultParams(a)
-      let firstPlan = null
+  const analyze = useCallback(
+    async (handle) => {
+      setStatus('loading')
+      setError(null)
       try {
-        firstPlan = generatePlan(a, data.problems, params)
+        if (platform === 'cf') {
+          const data = await loadCf(handle, setLoadingMsg)
+          setLoadingMsg('Analyzing profile…')
+          const analysis = analyzeProfile(data)
+          const params = defaultCfParams(analysis)
+          let plan = null
+          try {
+            plan = generatePlan(analysis, data.problems, params)
+          } catch {
+            plan = null
+          }
+          setCf({ analysis, problems: data.problems, params, plan })
+          setResultPlatform('cf')
+        } else {
+          const data = await loadLc(handle, setLoadingMsg)
+          setLoadingMsg('Scoring interview readiness…')
+          const analysis = analyzeLeetCode(data)
+          const params = defaultLcParams()
+          let plan = null
+          try {
+            plan = generateLcPlan(analysis, params)
+          } catch {
+            plan = null
+          }
+          setLc({ analysis, params, plan })
+          setResultPlatform('lc')
+        }
+        setStatus('ready')
+        setLastHandle(handle)
+        window.scrollTo({ top: 0, behavior: 'auto' })
       } catch (e) {
-        firstPlan = null
+        setError(e?.message || 'Could not load that profile. Double-check the spelling and try again.')
+        setStatus('error')
       }
-      setAnalysis(a)
-      setProblems(data.problems)
-      setPlanParams(params)
-      setPlan(firstPlan)
-      setStatus('ready')
-      setLastHandle(handle)
-      window.scrollTo({ top: 0, behavior: 'auto' })
-    } catch (e) {
-      setError(e?.message || 'Could not load this handle. Double-check the spelling and try again.')
-      setStatus('error')
-    }
-  }, [])
+    },
+    [platform],
+  )
 
-  const onGenerate = useCallback(
+  const onGenerateCf = useCallback(
     (draft) => {
-      if (!analysis || !problems) return
+      if (!cf) return
       const params = {
         start: Number(draft.start),
         target: Number(draft.target),
@@ -69,22 +87,35 @@ export default function App() {
         perDay: Number(draft.perDay),
         ramp: draft.ramp,
       }
-      setPlanParams(params)
+      let plan = null
       try {
-        setPlan(generatePlan(analysis, problems, params))
-      } catch (e) {
-        setPlan(null)
+        plan = generatePlan(cf.analysis, cf.problems, params)
+      } catch {
+        plan = null
       }
+      setCf((prev) => ({ ...prev, params, plan }))
     },
-    [analysis, problems],
+    [cf],
+  )
+
+  const onGenerateLc = useCallback(
+    (draft) => {
+      if (!lc) return
+      const params = { order: draft.order, perDay: Number(draft.perDay), includeHard: !!draft.includeHard }
+      let plan = null
+      try {
+        plan = generateLcPlan(lc.analysis, params)
+      } catch {
+        plan = null
+      }
+      setLc((prev) => ({ ...prev, params, plan }))
+    },
+    [lc],
   )
 
   const reset = useCallback(() => {
     setStatus('idle')
     setError(null)
-    setAnalysis(null)
-    setPlan(null)
-    setPlanParams(null)
   }, [])
 
   return (
@@ -94,62 +125,22 @@ export default function App() {
       {status === 'loading' && <Loader message={loadingMsg} />}
 
       {(status === 'idle' || status === 'error') && (
-        <HandleForm onAnalyze={analyze} loading={false} initialHandle={getLastHandle()} error={error} />
+        <HandleForm
+          platform={platform}
+          setPlatform={setPlatform}
+          onAnalyze={analyze}
+          loading={false}
+          initialHandle={getLastHandle()}
+          error={error}
+        />
       )}
 
-      {status === 'ready' && analysis && (
-        <main className="container" style={{ paddingTop: 26, paddingBottom: 10 }}>
-          <ProfileCard a={analysis} />
-          <StatGrid a={analysis} />
+      {status === 'ready' && resultPlatform === 'cf' && cf && (
+        <CfDashboard analysis={cf.analysis} plan={cf.plan} planParams={cf.params} onGeneratePlan={onGenerateCf} />
+      )}
 
-          <div className="section fade-up">
-            <div className="section-head">
-              <div>
-                <h2>Skill map</h2>
-                <p>Where your solves cluster, which topics you&apos;ve mastered, and your rating arc.</p>
-              </div>
-            </div>
-            <div className="charts-grid">
-              <div className="card pad">
-                <div className="card-title">
-                  <span className="dot" /> Solved by difficulty
-                </div>
-                <RatingBars
-                  distribution={analysis.distribution}
-                  start={planParams?.start}
-                  target={planParams?.target}
-                />
-              </div>
-              <div className="card pad">
-                <div className="card-title">
-                  <span className="dot" /> Topic radar
-                </div>
-                <TagRadar radar={analysis.radar} />
-              </div>
-            </div>
-            <div className="card pad" style={{ marginTop: 16 }}>
-              <div className="card-title">
-                <span className="dot" /> Rating history
-              </div>
-              <RatingHistoryChart history={analysis.history} currentRating={analysis.currentRating} />
-            </div>
-          </div>
-
-          <Analysis a={analysis} />
-
-          <PlanControls
-            params={planParams}
-            onGenerate={onGenerate}
-            currentRating={analysis.currentRating}
-            suggestedStart={analysis.suggestedStart}
-          />
-
-          {plan ? (
-            <StudyPlan plan={plan} />
-          ) : (
-            <div className="warn">Couldn&apos;t build a plan with those settings — try a different target or more days.</div>
-          )}
-        </main>
+      {status === 'ready' && resultPlatform === 'lc' && lc && (
+        <LcDashboard analysis={lc.analysis} plan={lc.plan} planParams={lc.params} onGeneratePlan={onGenerateLc} />
       )}
 
       <Footer />

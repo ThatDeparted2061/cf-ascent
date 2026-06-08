@@ -7,7 +7,11 @@ export default function Footer() {
           <a href="https://codeforces.com/apiHelp" target="_blank" rel="noreferrer">
             Codeforces API
           </a>{' '}
-          in your browser. Not affiliated with Codeforces.
+          and the public{' '}
+          <a href="https://leetcode.com" target="_blank" rel="noreferrer">
+            LeetCode
+          </a>{' '}
+          GraphQL endpoint. Not affiliated with either.
         </p>
         <p style={{ margin: '6px 0 0' }} className="dim">
           Analysis and recommendations are heuristic — use them as a guide, not gospel. Happy climbing. ▲

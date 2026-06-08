@@ -1,59 +1,68 @@
-# Ascent — Codeforces Practice Planner
+# Ascent — Codeforces + LeetCode Practice & Interview-Prep Planner
 
-**Ascent** analyzes any Codeforces handle and builds a personalized, day-by-day
-practice plan to climb from your current rating toward a target you choose — with
-a difficulty ramp that never jumps too far, and problem selection weighted toward
-the topics you're weakest at.
+**Ascent** analyzes a competitive-programming or interview profile and builds a
+personalized plan to close the gap to your goal. It has two modes, switchable
+from the landing page:
 
-It's a fully client-side React app (no backend, no API keys, no sign-in). Drop in
-a handle, set a target rating and a number of days, and get:
+- **Codeforces** — enter a handle, pick a target rating and a number of days, and
+  get a deep profile analysis plus a day-by-day problem set that ramps difficulty
+  gradually and front-loads your weak topics.
+- **LeetCode** — enter a username and get a **big-tech interview-readiness score**,
+  a section-by-section comparison against the patterns top companies actually
+  test, weak-section detection, and a **full prep plan** covering every topic
+  (curriculum order or weak-first) with a day-by-day schedule.
 
-- A **deep, data-driven profile analysis** — rating distribution, per-topic
-  mastery, accuracy, an error profile, and an estimate of your *true* working
-  level (not just your contest rating).
-- A **day-by-day plan** of unsolved problems that ramps gradually from your level
-  to your target, mixing consolidation / at-level / stretch problems each day.
-- A **full list** view with progress checkboxes (saved locally) and CSV export.
+Fully client-side React (no sign-in, no keys). Progress is saved locally; plans
+export to CSV.
 
 ---
 
-## How it works
+## Codeforces mode
 
-### 1. Profile analysis (`src/lib/analysis.js`)
+### Profile analysis (`src/lib/analysis.js`)
+From your full submission history: solved/attempted sets, accuracy, rating
+distribution, an estimate of your *true working level* (a blend of contest rating
+and the 85th-percentile difficulty you clear), per-topic mastery, strengths vs.
+focus areas, and an error profile (Wrong Answer / TLE / Runtime mix → concrete
+advice).
 
-From your full submission history (`user.status`) plus `user.info` and
-`user.rating`, Ascent computes:
+### Recommendation engine (`src/lib/recommender.js`)
+A day-by-day plan whose difficulty climbs gradually from `start` to `target`.
+Each day mixes a consolidation problem (just below level), core problems (at
+level) and a stretch problem (a step above). Selection is weighted toward
+weak-but-important topics, recommends only **unsolved** problems, prefers
+canonical (high-solve-count) problems, and is deterministic per handle+config.
 
-- **Solved / attempted sets** and submission-level + problem-level accuracy.
-- **Rating distribution** of everything you've solved.
-- **Working-level estimate** — a blend of your contest rating and the 85th
-  percentile of the difficulties you actually clear. This is the honest answer to
-  "what can you reliably solve right now?" and it's where the ramp starts.
-- **Per-topic mastery** — for every tag, a skill score derived from how many you've
-  solved and the hardest you've cleared, compared against how *important* that tag
-  is at your level (its frequency in the problem set around your rating).
-- **Strengths vs. focus areas** — important-but-underdeveloped tags surface as the
-  things to train.
-- **Error profile** — the mix of Wrong Answer / TLE / Runtime errors becomes
-  concrete advice (correctness vs. complexity vs. implementation hygiene).
+---
 
-### 2. Recommendation engine (`src/lib/recommender.js`)
+## LeetCode mode
 
-Given `start`, `target`, `days`, `problems/day`, and a ramp shape:
+### The "big-tech blueprint" (`src/lib/interviewBlueprint.js`)
+Rather than naming companies (their banks are private/premium), Ascent models the
+**patterns** big-tech SDE interviews test — the well-established Blind-75 /
+NeetCode-150 / Grind model. ~17 sections (Arrays & Hashing, Two Pointers, Sliding
+Window, Stack, Binary Search, Linked List, Trees, Heap, Backtracking, Tries,
+Graphs, DP, Greedy, Intervals, Math, Bit Manipulation, Design), each with an
+**importance weight**, a **readiness target**, LeetCode tag mappings, and a curated,
+ordered set of canonical problems (~143 total).
 
-- The **day's center difficulty** climbs from `start` toward `target` along a
-  tunable curve (gentle / moderate / steep), so the jump between days stays small.
-- Each day mixes a **consolidation** problem (just below the day's level), one or
-  more **core** problems (at level), and a **stretch** problem (a step above).
-- **Topic selection is weighted** toward weak-but-important tags, while keeping
-  variety so no single day is monotonous.
-- Only problems you **haven't solved** are recommended, and **popular / canonical**
-  problems (high solved count) are preferred.
-- The plan is **deterministic** for a given handle + settings (seeded RNG), so your
-  progress checkboxes stay meaningful across reloads.
+### Analysis (`src/lib/lcAnalysis.js`)
+- Difficulty mix (Easy/Medium/Hard) vs. a healthy interview profile.
+- **Per-section mastery** from your solved-by-tag counts, measured against the
+  blueprint targets.
+- A composite **readiness score (0–100)** blending section mastery, difficulty mix
+  and contest rating, with a readiness band.
+- **Weak vs. strong sections**, ranked by `importance × (1 − mastery)`.
+- Contest rating history and standing.
 
-> These are heuristics, not an oracle — they encode common competitive-programming
-> wisdom (practice slightly above your level, train weaknesses, ramp gradually).
+### Prep plan (`src/lib/lcRecommender.js`)
+A full-coverage plan over every section — in **curriculum order** (foundational →
+advanced) or **weak-first** (attack your gaps), optionally Easy/Medium only — with
+a **day-by-day schedule** at a pace you set. Recently-solved problems are
+pre-checked; progress is saved locally; everything exports to CSV.
+
+> All scores are heuristics encoding common interview wisdom — a strong guide,
+> not an oracle.
 
 ---
 
@@ -61,8 +70,12 @@ Given `start`, `target`, `days`, `problems/day`, and a ramp shape:
 
 - [Vite](https://vitejs.dev/) + [React 18](https://react.dev/)
 - Zero UI dependencies — custom CSS design system and hand-built SVG charts
-- Public [Codeforces API](https://codeforces.com/apiHelp), called directly from the
-  browser (CORS-enabled), with a Netlify serverless proxy as an automatic fallback
+  (rating distribution, topic radar, rating history, readiness gauge, difficulty
+  donut, section bars)
+- **Codeforces API** — called directly from the browser (CORS-enabled), with a
+  Netlify proxy fallback.
+- **LeetCode GraphQL** — *not* CORS-enabled, so it's always proxied: a Netlify
+  function in production and the Vite dev-server proxy locally.
 
 ---
 
@@ -73,11 +86,12 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
-Build a production bundle:
+The dev server proxies LeetCode requests for you, so LeetCode mode works locally.
+Codeforces works directly. Build a production bundle:
 
 ```bash
 npm run build    # outputs to dist/
-npm run preview  # serve the build locally
+npm run preview
 ```
 
 ---
@@ -85,33 +99,42 @@ npm run preview  # serve the build locally
 ## Deploy
 
 ### Push to GitHub
-
 ```bash
-git init                       # already done if you cloned this folder
 git add -A
-git commit -m "Ascent: Codeforces practice planner"
+git commit -m "Ascent"
 git branch -M main
 git remote add origin https://github.com/<your-username>/cf-ascent.git
 git push -u origin main
 ```
 
+---
+
 ## Project structure
 
 ```
 cf-ascent/
-├── index.html
-├── netlify.toml                # build + SPA routing + functions config
-├── netlify/functions/cf.js     # CORS-fallback proxy for the Codeforces API
+├── netlify/functions/
+│   ├── cf.js                   # Codeforces CORS-fallback proxy
+│   └── leetcode.js             # LeetCode GraphQL proxy (required)
+├── vite.config.js              # dev proxy for the LeetCode endpoint
 ├── src/
-│   ├── App.jsx                 # state + page orchestration
-│   ├── api/codeforces.js       # API client (direct → proxy fallback)
+│   ├── App.jsx                 # platform switch + orchestration
+│   ├── api/
+│   │   ├── codeforces.js
+│   │   └── leetcode.js
 │   ├── lib/
-│   │   ├── analysis.js         # profile analysis engine
-│   │   ├── recommender.js      # day-by-day plan generator
-│   │   ├── constants.js        # rating tiers, tag labels, helpers, seeded RNG
-│   │   └── storage.js          # localStorage (progress + last handle)
-│   └── components/             # Nav, HandleForm, ProfileCard, Charts, Analysis,
-│                                 PlanControls, StudyPlan, FullList, …
+│   │   ├── analysis.js         # Codeforces profile analysis
+│   │   ├── recommender.js      # Codeforces day-by-day plan
+│   │   ├── interviewBlueprint.js  # big-tech sections + curated problems
+│   │   ├── lcAnalysis.js       # LeetCode readiness analysis
+│   │   ├── lcRecommender.js    # LeetCode prep plan
+│   │   ├── constants.js
+│   │   └── storage.js
+│   └── components/
+│       ├── HandleForm.jsx      # landing + platform toggle
+│       ├── CfDashboard.jsx     # Codeforces view
+│       ├── Charts.jsx          # shared SVG charts
+│       └── lc/                 # LeetCode dashboard, charts, analysis, prep plan
 └── README.md
 ```
 
@@ -119,8 +142,10 @@ cf-ascent/
 
 ## Notes & limitations
 
-- Topic "importance" and "skill" are heuristic proxies; treat the analysis as a
-  strong guide, not an exact science.
-- Very high target ratings have fewer available problems — the planner widens the
-  difficulty window and warns you if a day couldn't be fully filled.
-- Not affiliated with Codeforces. Reads only public data.
+- LeetCode has no official public API; Ascent uses its public GraphQL endpoint
+  through a proxy. Section mastery is estimated from per-tag solved counts, so
+  it's a strong approximation, not an exact per-problem audit.
+- Codeforces section "importance" and "skill", and LeetCode readiness, are
+  heuristic.
+- Not affiliated with Codeforces or LeetCode. Reads only public data.
+```
