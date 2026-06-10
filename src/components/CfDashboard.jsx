@@ -1,59 +1,90 @@
 import ProfileCard from './ProfileCard.jsx'
 import StatGrid from './StatGrid.jsx'
-import { RatingBars, RatingHistoryChart, TagRadar } from './Charts.jsx'
 import Analysis from './Analysis.jsx'
-import PlanControls from './PlanControls.jsx'
-import StudyPlan from './StudyPlan.jsx'
+import SummitMap from './SummitMap.jsx'
+import Chase from './Chase.jsx'
+import { Reveal, Marquee } from '../fx/Fx.jsx'
+import { RatingBars, RatingHistoryChart, TagRadar } from './Charts.jsx'
 
-export default function CfDashboard({ analysis, plan, planParams, onGeneratePlan }) {
+export default function CfDashboard({
+  analysis,
+  plan,
+  planParams,
+  target,
+  setTarget,
+  onGeneratePlan,
+  onSwap,
+  onResync,
+  resyncState,
+  autoDone,
+}) {
   return (
-    <main className="container" style={{ paddingTop: 26, paddingBottom: 10 }}>
-      <ProfileCard a={analysis} />
-      <StatGrid a={analysis} />
-
-      <div className="section fade-up">
-        <div className="section-head">
-          <div>
-            <h2>Skill map</h2>
-            <p>Where your solves cluster, which topics you&apos;ve mastered, and your rating arc.</p>
-          </div>
-        </div>
-        <div className="charts-grid">
-          <div className="card pad">
-            <div className="card-title">
-              <span className="dot" /> Solved by difficulty
-            </div>
-            <RatingBars distribution={analysis.distribution} start={planParams?.start} target={planParams?.target} />
-          </div>
-          <div className="card pad">
-            <div className="card-title">
-              <span className="dot" /> Topic radar
-            </div>
-            <TagRadar radar={analysis.radar} />
-          </div>
-        </div>
-        <div className="card pad" style={{ marginTop: 16 }}>
-          <div className="card-title">
-            <span className="dot" /> Rating history
-          </div>
-          <RatingHistoryChart history={analysis.history} currentRating={analysis.currentRating} />
-        </div>
+    <main style={{ paddingTop: 86 }}>
+      <div className="container">
+        <ProfileCard a={analysis} />
+        <StatGrid a={analysis} />
       </div>
 
-      <Analysis a={analysis} />
-
-      <PlanControls
-        params={planParams}
-        onGenerate={onGeneratePlan}
-        currentRating={analysis.currentRating}
-        suggestedStart={analysis.suggestedStart}
+      <Marquee
+        items={[
+          `LEVEL ${analysis.workingLevel}`,
+          analysis.band.name.toUpperCase(),
+          `${analysis.totalSolved} SOLVED`,
+          `${analysis.recentSolves30} THIS MONTH`,
+          analysis.levelEstimate.trend.toUpperCase(),
+          `STREAK ${analysis.currentStreak}D`,
+        ]}
+        duration={30}
       />
 
-      {plan ? (
-        <StudyPlan plan={plan} />
-      ) : (
-        <div className="warn">Couldn&apos;t build a plan with those settings — try a different target or more days.</div>
-      )}
+      <div className="container">
+        <section className="section">
+          <Reveal className="sec-head">
+            <span className="num">01 — SKILL TERRAIN</span>
+            <h2 className="display">
+              The shape of <em>everything you&apos;ve solved.</em>
+            </h2>
+          </Reveal>
+
+          <div className="charts-grid">
+            <Reveal className="card pad" delay={40}>
+              <div className="card-label">
+                <span className="tick">✦</span> Solves by difficulty
+              </div>
+              <RatingBars distribution={analysis.distribution} start={planParams?.start} target={target} />
+            </Reveal>
+            <Reveal className="card pad" delay={120}>
+              <div className="card-label">
+                <span className="tick">✦</span> Topic radar — evidence vs the field
+              </div>
+              <TagRadar radar={analysis.radar} />
+            </Reveal>
+          </div>
+
+          <Reveal className="card pad" style={{ marginTop: 16 }} delay={80}>
+            <div className="card-label">
+              <span className="tick">✦</span> The rating arc
+            </div>
+            <RatingHistoryChart history={analysis.history} currentRating={analysis.currentRating} target={target} />
+          </Reveal>
+        </section>
+
+        <Analysis a={analysis} />
+
+        <SummitMap a={analysis} target={target} setTarget={setTarget} />
+
+        <Chase
+          plan={plan}
+          params={planParams}
+          target={target}
+          onGenerate={onGeneratePlan}
+          onSwap={onSwap}
+          onResync={onResync}
+          resyncState={resyncState}
+          suggestedStart={analysis.suggestedStart}
+          autoDone={autoDone}
+        />
+      </div>
     </main>
   )
 }

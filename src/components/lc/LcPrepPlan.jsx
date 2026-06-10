@@ -1,13 +1,16 @@
+// THE OFFER CHASE — the LeetCode prep plan, staged by pattern.
+
 import { useEffect, useMemo, useState } from 'react'
 import { fmtInt } from '../../lib/constants.js'
 import { getDone, setDone as persistDone } from '../../lib/storage.js'
+import { Reveal, ProgressRing, Marquee } from '../../fx/Fx.jsx'
 
 const DCOLOR = { Easy: 'var(--green)', Medium: 'var(--amber)', Hard: 'var(--red)' }
 
 function Chip({ difficulty }) {
   return (
     <span className="rchip" style={{ color: DCOLOR[difficulty] }}>
-      {difficulty}
+      ◆ {difficulty}
     </span>
   )
 }
@@ -39,7 +42,7 @@ function SolvedItem({ p }) {
         </a>
         <div className="pills">
           <Chip difficulty={p.difficulty} />
-          <span className="pill" style={{ color: 'var(--green)', borderColor: 'rgba(52,211,153,0.4)' }}>solved ✓</span>
+          <span className="pill" style={{ color: 'var(--green)', borderColor: 'rgba(163,184,127,0.4)' }}>solved ✓</span>
         </div>
       </div>
     </div>
@@ -50,14 +53,11 @@ export default function LcPrepPlan({ plan, params, onGenerate }) {
   const [draft, setDraft] = useState(params)
   const [done, setDoneState] = useState(() => new Set())
   const [tab, setTab] = useState('curriculum')
-  const [expanded, setExpanded] = useState(() => new Set())
   const [showSolved, setShowSolved] = useState(false)
 
   useEffect(() => setDraft(params), [params])
-
   useEffect(() => {
     setDoneState(getDone(plan.signature))
-    setExpanded(new Set(plan.sections.filter((s) => s.isWeak && s.todo.length).map((s) => s.id)))
   }, [plan.signature])
 
   const toggle = (id) => {
@@ -69,13 +69,6 @@ export default function LcPrepPlan({ plan, params, onGenerate }) {
       return next
     })
   }
-  const toggleSection = (id) =>
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
 
   const doneCount = useMemo(() => plan.allItems.filter((i) => done.has(i.id)).length, [plan, done])
   const progress = plan.meta.total ? doneCount / plan.meta.total : 0
@@ -96,178 +89,179 @@ export default function LcPrepPlan({ plan, params, onGenerate }) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `leetcode-${plan.meta.level}-prep-${plan.meta.username}.csv`
+    link.download = `ascent-offer-chase-${plan.meta.level}-${plan.meta.username}.csv`
     link.click()
     URL.revokeObjectURL(url)
   }
 
-  const levelLabel = plan.meta.level === 'advanced' ? 'Advanced' : 'Foundation'
-
   return (
-    <div className="section fade-up">
-      <div className="section-head">
-        <div>
-          <h2>Interview prep plan</h2>
-          <p>
-            The patterns big tech tests — only the problems you haven&apos;t solved yet, ordered with
-            your weak topics first, scheduled to fit your timeline.
-          </p>
-        </div>
-      </div>
+    <section className="section">
+      <Reveal className="sec-head">
+        <span className="num">03 — THE PLAN</span>
+        <h2 className="display" style={{ fontFamily: 'var(--display)', fontWeight: 800, letterSpacing: '0.06em' }}>
+          THE OFFER CHASE
+        </h2>
+        <p className="sub">
+          Every pattern big tech tests, weak sections first, already-solved problems hidden, scheduled to your window.
+        </p>
+      </Reveal>
 
-      {/* controls */}
-      <div className="card pad">
-        <div className="card-title">
-          <span className="dot" /> Build your prep plan
+      <Reveal className="card pad corner" style={{ marginBottom: 18 }}>
+        <div className="card-label">
+          <span className="tick">✦</span> Expedition parameters
         </div>
-        <div className="controls" style={{ gridTemplateColumns: '1.4fr 1fr auto' }}>
-          <div className="field">
+        <div className="controls-grid" style={{ gridTemplateColumns: '2fr 1fr auto' }}>
+          <div className="nfield">
             <label>Preparation level</label>
             <select className="select" value={draft.level} onChange={(e) => set('level', e.target.value)}>
               <option value="foundation">Foundation — Easy → Medium build-up</option>
               <option value="advanced">Advanced — mostly Hard &amp; tough Medium</option>
             </select>
+            <div className="hint">
+              {draft.level === 'advanced'
+                ? 'Finishing a topic at Advanced means you have truly covered it.'
+                : 'Walks each pattern up from Easy to Medium — solid fundamentals.'}
+            </div>
           </div>
-          <div className="field">
+          <div className="nfield">
             <label>Days to finish</label>
             <input type="number" min="1" max="365" value={draft.days} onChange={(e) => set('days', Number(e.target.value))} />
+            <div className="hint">≈{plan.meta.perDay || '—'} problems/day at current size</div>
           </div>
-          <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button className="btn" onClick={() => onGenerate(draft)}>
-              Generate
+          <div className="nfield" style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button className="btn solid" onClick={() => onGenerate(draft)}>
+              Stage it →
             </button>
           </div>
         </div>
-        <div className="hint" style={{ marginTop: 10 }}>
-          {plan.meta.level === 'advanced'
-            ? 'Advanced gives you mostly Hard and above-average Medium problems so that finishing a topic means you’ve truly covered it.'
-            : 'Foundation walks each pattern up from Easy to Medium to build solid fundamentals.'}
-        </div>
-      </div>
+      </Reveal>
 
-      {/* summary + progress */}
-      <div className="plan-summary" style={{ marginTop: 18 }}>
-        <div className="card stat">
-          <div className="l">To-do ({levelLabel})</div>
-          <div className="v">{fmtInt(plan.meta.total)}</div>
-        </div>
-        <div className="card stat">
-          <div className="l">Over</div>
-          <div className="v">{plan.meta.days}d</div>
-          <div className="sub">~{plan.meta.perDay}/day</div>
-        </div>
-        <div className="card stat">
-          <div className="l">Already solved</div>
-          <div className="v" style={{ color: 'var(--green)' }}>
-            {fmtInt(plan.meta.totalSolvedInScope)}
-          </div>
-          <div className="sub">hidden from plan</div>
-        </div>
-        <div className="card stat">
-          <div className="l">Checked off</div>
-          <div className="v" style={{ color: 'var(--cyan)' }}>
-            {Math.round(progress * 100)}%
-          </div>
-        </div>
-      </div>
+      <Marquee
+        items={[
+          `${plan.meta.total} TO CONQUER`,
+          `${plan.meta.days} DAYS`,
+          `${plan.meta.totalSolvedInScope} ALREADY YOURS`,
+          plan.meta.level.toUpperCase(),
+          `${plan.sections.filter((s) => s.isWeak).length} PRIORITY SECTIONS`,
+        ]}
+        duration={26}
+      />
 
-      <div className="card pad" style={{ marginTop: 16 }}>
-        <div className="progress-wrap">
-          <div className="progress-bar">
-            <i style={{ width: `${progress * 100}%` }} />
+      <Reveal className="card pad" style={{ marginTop: 18 }}>
+        <div className="chase-overview">
+          <ProgressRing pct={progress} label="conquered" sub={`${doneCount}/${plan.meta.total}`} big />
+          <div>
+            <div className="card-label">
+              <span className="tick">✦</span> The war report
+            </div>
+            <p className="verdict" style={{ fontSize: 'clamp(17px,2vw,22px)', margin: 0 }}>
+              <b>{fmtInt(plan.meta.total)}</b> problems stand between you and full blueprint coverage —{' '}
+              <b>{fmtInt(plan.meta.totalSolvedInScope)}</b> are already behind you and hidden from the list.{' '}
+              {plan.meta.total === 0
+                ? 'Every problem in this track is done. Switch levels, or go collect the offer.'
+                : `At ~${plan.meta.perDay}/day this closes in ${plan.meta.days} days.`}
+            </p>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 18 }}>
+              <div className="tabs">
+                <button className={tab === 'curriculum' ? 'active' : ''} onClick={() => setTab('curriculum')}>
+                  By topic
+                </button>
+                <button className={tab === 'schedule' ? 'active' : ''} onClick={() => setTab('schedule')}>
+                  By day
+                </button>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--muted)', fontStyle: 'italic', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  className="chk"
+                  style={{ marginTop: 0, width: 16, height: 16 }}
+                  checked={showSolved}
+                  onChange={(e) => setShowSolved(e.target.checked)}
+                />
+                show solved
+              </label>
+              <button className="btn ghost sm" onClick={exportCsv}>
+                ↓ Export CSV
+              </button>
+            </div>
           </div>
-          <span className="progress-num">
-            {doneCount}/{plan.meta.total}
-          </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, flexWrap: 'wrap', gap: 10 }}>
-          <div className="tabs">
-            <button className={tab === 'curriculum' ? 'active' : ''} onClick={() => setTab('curriculum')}>
-              By topic
-            </button>
-            <button className={tab === 'schedule' ? 'active' : ''} onClick={() => setTab('schedule')}>
-              Day-by-day
-            </button>
-          </div>
-          <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--muted)' }}>
-              <input type="checkbox" checked={showSolved} onChange={(e) => setShowSolved(e.target.checked)} /> Show solved
-            </label>
-            <button className="btn ghost sm" onClick={exportCsv}>
-              ⬇ Export CSV
-            </button>
-          </div>
-        </div>
-      </div>
+      </Reveal>
 
       {plan.meta.total === 0 && (
         <div className="warn" style={{ marginTop: 16 }}>
-          You&apos;ve already solved every problem in this track — switch to{' '}
-          {plan.meta.level === 'foundation' ? 'Advanced' : 'Foundation'} for more, or turn on “Show solved”.
+          You&apos;ve already conquered every problem in this track — switch to{' '}
+          {plan.meta.level === 'foundation' ? 'Advanced' : 'Foundation'}, or flip on “show solved” to admire the bodies.
         </div>
       )}
 
-      {tab === 'curriculum' ? (
-        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {plan.sections.map((s) => {
-            const total = s.todo.length
-            const sd = s.todo.filter((p) => done.has(p.id)).length
-            const isOpen = expanded.has(s.id)
-            return (
-              <div className="card pad" key={s.id}>
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', flexWrap: 'wrap' }}
-                  onClick={() => toggleSection(s.id)}
-                >
-                  <span style={{ fontSize: 16, fontWeight: 700 }}>{s.name}</span>
-                  {s.isWeak && <span className="pill weak">focus</span>}
-                  {s.complete && <span className="pill" style={{ color: 'var(--green)', borderColor: 'rgba(52,211,153,0.4)' }}>complete ✓</span>}
-                  <span className="pill" style={{ textTransform: 'capitalize' }}>{s.tier}</span>
-                  {s.solvedCount > 0 && <span className="dim" style={{ fontSize: 12 }}>{s.solvedCount} solved</span>}
-                  <div style={{ flex: 1 }} />
-                  <span className="progress-num">
-                    {sd}/{total} to-do
-                  </span>
-                  <div className="progress-bar" style={{ width: 110 }}>
-                    <i style={{ width: `${total ? (sd / total) * 100 : 100}%` }} />
-                  </div>
-                  <span className="dim" style={{ fontSize: 18, width: 16, textAlign: 'center' }}>{isOpen ? '−' : '+'}</span>
-                </div>
-                {isOpen && (
-                  <>
-                    <div className="why" style={{ fontSize: 13, color: 'var(--muted)', margin: '8px 0 4px' }}>{s.blurb}</div>
-                    <div>
+      <div style={{ marginTop: 28 }}>
+        {tab === 'curriculum' ? (
+          <div>
+            {plan.sections.map((s, i) => {
+              const total = s.todo.length
+              const sd = s.todo.filter((p) => done.has(p.id)).length
+              const pct = total ? sd / total : 1
+              return (
+                <Reveal className="topic-block" key={s.id} delay={Math.min(i * 50, 280)}>
+                  <details open={s.isWeak && total > 0}>
+                    <summary className="topic-head" style={{ listStyle: 'none' }}>
+                      <span className="nm">
+                        {i + 1 < 10 ? `0${i + 1}` : i + 1} · {s.name}
+                        {s.isWeak && <span className="pill weak" style={{ marginLeft: 10, verticalAlign: 'middle' }}>priority gap</span>}
+                        {s.complete && (
+                          <span className="pill" style={{ marginLeft: 10, verticalAlign: 'middle', color: 'var(--green)', borderColor: 'rgba(163,184,127,0.4)' }}>
+                            complete ✓
+                          </span>
+                        )}
+                      </span>
+                      <span className="route">
+                        {s.tier} · mastery <b>{Math.round(s.mastery * 100)}%</b>
+                        {s.solvedCount > 0 ? ` · ${s.solvedCount} already solved` : ''}
+                      </span>
+                      <span className="spacer" />
+                      <span className="topic-prog">
+                        <span className="topic-bar">
+                          <i style={{ width: `${pct * 100}%` }} />
+                        </span>
+                        {sd}/{total}
+                      </span>
+                    </summary>
+                    <div className="topic-items">
+                      <p className="dim" style={{ fontStyle: 'italic', fontSize: 14, margin: '10px 0 4px' }}>
+                        {s.blurb}
+                      </p>
                       {s.todo.map((p) => (
                         <TodoItem key={p.id} p={p} isDone={done.has(p.id)} toggle={toggle} />
                       ))}
                       {showSolved && s.solved.map((p) => <SolvedItem key={p.id} p={p} />)}
                       {!s.todo.length && !showSolved && (
-                        <div className="dim" style={{ fontSize: 13, padding: '6px 0' }}>
-                          All {s.solvedCount} problems in this track are done. 🎉
+                        <div className="dim" style={{ fontSize: 14, fontStyle: 'italic', padding: '8px 0' }}>
+                          All {s.solvedCount} problems in this track already conquered.
                         </div>
                       )}
                     </div>
-                  </>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      ) : (
-        <div className="days" style={{ marginTop: 16 }}>
-          {plan.days.map((d) => (
-            <div className="card day" key={d.day}>
-              <div className="day-head">
-                <span className="d">Day {d.day}</span>
-                <span className="c">{d.sectionNames.join(' · ')}</span>
-              </div>
-              {d.items.map((p) => (
-                <TodoItem key={p.id} p={p} isDone={done.has(p.id)} toggle={toggle} />
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+                  </details>
+                </Reveal>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="days-grid">
+            {plan.days.map((d, i) => (
+              <Reveal className="day-card" key={d.day} delay={Math.min(i * 30, 240)}>
+                <div className="day-head">
+                  <span className="d">DAY {d.day}</span>
+                  <span className="c">{d.sectionNames.slice(0, 2).join(' · ')}</span>
+                </div>
+                {d.items.map((p) => (
+                  <TodoItem key={p.id} p={p} isDone={done.has(p.id)} toggle={toggle} />
+                ))}
+              </Reveal>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   )
 }

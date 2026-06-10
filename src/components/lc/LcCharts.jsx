@@ -1,4 +1,7 @@
+// LeetCode charts — readiness gauge, difficulty donut, section mastery bars.
+
 import { fmtInt } from '../../lib/constants.js'
+import { useInView, CountUp } from '../../fx/Fx.jsx'
 
 const TONE = { red: 'var(--red)', amber: 'var(--amber)', green: 'var(--green)' }
 
@@ -7,34 +10,56 @@ function polar(cx, cy, r, deg) {
   return [cx + r * Math.cos(a), cy - r * Math.sin(a)]
 }
 
-/* ---------------- Readiness gauge (semicircle) ---------------- */
+/* ── Readiness gauge (sweeping semicircle) ──────────────────────────────── */
 export function ReadinessGauge({ score, band }) {
+  const [ref, inView] = useInView(0.3)
   const cx = 120
-  const cy = 116
+  const cy = 118
   const r = 92
   const f = Math.max(0, Math.min(1, score / 100))
-  const endAngle = 180 - 180 * f
-  const [ex, ey] = polar(cx, cy, r, endAngle)
   const [lx, ly] = polar(cx, cy, r, 180)
-  const color = TONE[band.tone] || 'var(--cyan)'
+  const color = TONE[band.tone] || 'var(--gold)'
+  const halfC = Math.PI * r
 
   return (
-    <div className="chart-wrap" style={{ textAlign: 'center' }}>
-      <svg className="svg-chart" viewBox="0 0 240 140" role="img" aria-label="Readiness">
-        <path d={`M ${lx} ${ly} A ${r} ${r} 0 0 0 ${cx + r} ${cy}`} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="16" strokeLinecap="round" />
-        <path d={`M ${lx} ${ly} A ${r} ${r} 0 0 0 ${ex} ${ey}`} fill="none" stroke={color} strokeWidth="16" strokeLinecap="round" />
-        <text x={cx} y={cy - 26} textAnchor="middle" fontSize="42" fontWeight="800" fill={color} fontFamily="var(--mono)">
+    <div className="chart-wrap gauge-center" ref={ref}>
+      <svg className="svg-chart" viewBox="0 0 240 150" role="img" aria-label="Readiness" style={{ maxWidth: 320, margin: '0 auto' }}>
+        {[0.25, 0.5, 0.75].map((m) => {
+          const [tx, ty] = polar(cx, cy, r + 14, 180 - 180 * m)
+          return (
+            <text key={m} x={tx} y={ty} textAnchor="middle" fontSize="8" fill="var(--muted-2)">
+              {Math.round(m * 100)}
+            </text>
+          )
+        })}
+        <path
+          d={`M ${lx} ${ly} A ${r} ${r} 0 0 0 ${cx + r} ${cy}`}
+          fill="none"
+          stroke="rgba(194,168,120,0.12)"
+          strokeWidth="14"
+        />
+        <path
+          d={`M ${lx} ${ly} A ${r} ${r} 0 0 0 ${cx + r} ${cy}`}
+          fill="none"
+          stroke={color}
+          strokeWidth="14"
+          pathLength="1"
+          strokeDasharray={`${f} 1`}
+          strokeDashoffset={inView ? 0 : f}
+          style={{ transition: 'stroke-dashoffset 1.8s cubic-bezier(.19,1,.22,1) .2s' }}
+        />
+        <text x={cx} y={cy - 22} textAnchor="middle" fontSize="44" fontWeight="700" fill={color} fontFamily="var(--display)">
           {score}
         </text>
-        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="12" fill="var(--muted)">
-          / 100 readiness
+        <text x={cx} y={cy - 2} textAnchor="middle" fontSize="9" fill="var(--muted-2)" letterSpacing="2">
+          / 100 READINESS
         </text>
       </svg>
-      <div style={{ marginTop: 4 }}>
-        <span className="rank-pill" style={{ color }}>
+      <div style={{ marginTop: 8 }}>
+        <span className="pill" style={{ color, borderColor: 'currentColor', fontSize: 10.5 }}>
           {band.label}
         </span>
-        <div className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+        <div className="muted" style={{ fontSize: 14.5, marginTop: 10, fontStyle: 'italic' }}>
           {band.note}
         </div>
       </div>
@@ -42,8 +67,9 @@ export function ReadinessGauge({ score, band }) {
   )
 }
 
-/* ---------------- Difficulty donut ---------------- */
+/* ── Difficulty donut ───────────────────────────────────────────────────── */
 export function DifficultyDonut({ byDifficulty, totalSolved }) {
+  const [ref, inView] = useInView(0.3)
   const cx = 80
   const cy = 80
   const r = 60
@@ -57,9 +83,13 @@ export function DifficultyDonut({ byDifficulty, totalSolved }) {
   let acc = 0
 
   return (
-    <div className="chart-wrap" style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
-      <svg width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Difficulty distribution">
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="18" />
+    <div
+      className="chart-wrap"
+      ref={ref}
+      style={{ display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}
+    >
+      <svg width="170" height="170" viewBox="0 0 160 160" role="img" aria-label="Difficulty distribution">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(194,168,120,0.1)" strokeWidth="16" />
         {segs.map((s) => {
           const frac = s.count / sum
           const dash = frac * C
@@ -71,31 +101,32 @@ export function DifficultyDonut({ byDifficulty, totalSolved }) {
               r={r}
               fill="none"
               stroke={s.color}
-              strokeWidth="18"
-              strokeDasharray={`${dash} ${C - dash}`}
+              strokeWidth="16"
+              strokeDasharray={`${inView ? dash : 0} ${inView ? C - dash : C}`}
               strokeDashoffset={-acc * C}
               transform={`rotate(-90 ${cx} ${cy})`}
+              style={{ transition: 'stroke-dasharray 1.5s cubic-bezier(.19,1,.22,1) .2s' }}
             />
           )
           acc += frac
           return el
         })}
-        <text x={cx} y={cy - 4} textAnchor="middle" fontSize="30" fontWeight="800" fill="var(--text)" fontFamily="var(--mono)">
+        <text x={cx} y={cy - 2} textAnchor="middle" fontSize="28" fontWeight="700" fill="var(--cream)" fontFamily="var(--display)">
           {fmtInt(totalSolved)}
         </text>
-        <text x={cx} y={cy + 16} textAnchor="middle" fontSize="12" fill="var(--muted)">
-          solved
+        <text x={cx} y={cy + 17} textAnchor="middle" fontSize="8.5" fill="var(--muted-2)" letterSpacing="2">
+          SOLVED
         </text>
       </svg>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+      <div className="donut-legend">
         {segs.map((s) => (
-          <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5 }}>
-            <i style={{ width: 11, height: 11, borderRadius: 3, background: s.color, display: 'inline-block' }} />
+          <div className="dl" key={s.key}>
+            <i style={{ background: s.color }} />
             <span style={{ width: 64 }}>{s.key}</span>
-            <span className="mono" style={{ color: 'var(--muted)' }}>
-              {s.count}
-              <span className="dim"> / {byDifficulty[s.key].total}</span>
-            </span>
+            <b>
+              <CountUp value={s.count} />
+            </b>
+            <span className="dim">/ {fmtInt(byDifficulty[s.key].total)}</span>
           </div>
         ))}
       </div>
@@ -103,28 +134,26 @@ export function DifficultyDonut({ byDifficulty, totalSolved }) {
   )
 }
 
-/* ---------------- Section mastery bars ---------------- */
+/* ── Section mastery bars ───────────────────────────────────────────────── */
 export function SectionBars({ sections }) {
+  const [ref, inView] = useInView(0.12)
+  const color = (m) => (m >= 0.7 ? 'var(--green)' : m >= 0.4 ? 'var(--amber)' : 'var(--red)')
   return (
-    <div className="tag-bars">
-      {sections.map((s) => {
+    <div ref={ref} className={inView ? 'in' : ''}>
+      {sections.map((s, i) => {
         const pct = Math.round(s.mastery * 100)
-        const color =
-          s.mastery >= 0.7 ? 'linear-gradient(90deg,var(--green),var(--lime))' : s.mastery >= 0.4 ? 'linear-gradient(90deg,var(--amber),var(--lime))' : 'linear-gradient(90deg,var(--red),var(--amber))'
         return (
-          <div className="tag-bar" key={s.id}>
-            <div className="top">
-              <span>
-                {s.name}
-                {s.importance >= 1 && <span className="dim" style={{ fontSize: 11 }}> · core</span>}
-              </span>
-              <span className="r">
-                {s.solved}/{s.target} · {pct}%
-              </span>
-            </div>
-            <div className="track" style={{ position: 'relative' }}>
-              <i style={{ width: `${pct}%`, background: color }} />
-            </div>
+          <div className="sbar" key={s.id}>
+            <span className="nm">
+              {s.name}
+              {s.importance >= 1 && <span className="dim mono" style={{ fontSize: 9, marginLeft: 8, letterSpacing: '0.2em' }}>CORE</span>}
+            </span>
+            <span className="track">
+              <i style={{ width: `${Math.max(2, pct)}%`, background: color(s.mastery), '--d': `${i * 50}ms` }} />
+            </span>
+            <span className="pc">
+              {s.solved}/{s.target} · {pct}%
+            </span>
           </div>
         )
       })}

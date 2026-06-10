@@ -1,3 +1,5 @@
+// The manifest — every problem in the chase, filterable, exportable.
+
 import { useMemo, useState } from 'react'
 import { prettyTag, ratingColor } from '../lib/constants.js'
 
@@ -12,21 +14,24 @@ export default function FullList({ plan, done, toggle }) {
       if (!needle) return true
       return (
         p.name.toLowerCase().includes(needle) ||
-        p.tags.some((t) => t.toLowerCase().includes(needle)) ||
-        String(p.rating).includes(needle)
+        (p.tags || []).some((t) => t.toLowerCase().includes(needle)) ||
+        String(p.rating).includes(needle) ||
+        (p.role || '').includes(needle)
       )
     })
   }, [plan, q, hideDone, done])
 
   const exportCsv = () => {
-    const header = 'Day,Problem,Rating,Role,Tags,URL'
+    const header = 'Day,Problem,Rating,Role,Topic,Step,Tags,URL'
     const lines = plan.totalList.map((p) =>
       [
         p.day,
         `"${p.name.replace(/"/g, "'")}"`,
         p.rating,
-        p.role,
-        `"${p.tags.map(prettyTag).join('; ')}"`,
+        p.role || '',
+        p.ladderTag ? prettyTag(p.ladderTag) : 'breadth',
+        p.ladderStep ? `${p.ladderStep}/${p.ladderTotal}` : '',
+        `"${(p.tags || []).map(prettyTag).join('; ')}"`,
         p.url,
       ].join(','),
     )
@@ -34,30 +39,31 @@ export default function FullList({ plan, done, toggle }) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `ascent-${plan.meta.handle}-${plan.meta.start}-to-${plan.meta.target}.csv`
+    a.download = `ascent-chase-${plan.meta.handle}-${plan.meta.start}-to-${plan.meta.target}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
 
   return (
     <div className="card pad">
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+      <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
         <input
           className="input"
-          style={{ maxWidth: 260, padding: '9px 13px', fontSize: 14 }}
-          placeholder="Filter by name, tag, rating…"
+          style={{ maxWidth: 280, padding: '10px 14px' }}
+          placeholder="filter by name, tag, rating, role…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, color: 'var(--muted)' }}>
-          <input type="checkbox" checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} /> Hide completed
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--muted)', fontStyle: 'italic', cursor: 'pointer' }}>
+          <input type="checkbox" className="chk" style={{ marginTop: 0, width: 16, height: 16 }} checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} />
+          hide conquered
         </label>
         <div style={{ flex: 1 }} />
-        <span className="muted" style={{ fontSize: 13 }}>
-          {rows.length} of {plan.totalList.length}
+        <span className="mono dim" style={{ fontSize: 11, letterSpacing: '0.14em' }}>
+          {rows.length} / {plan.totalList.length}
         </span>
         <button className="btn ghost sm" onClick={exportCsv}>
-          ⬇ Export CSV
+          ↓ Export CSV
         </button>
       </div>
 
@@ -70,6 +76,7 @@ export default function FullList({ plan, done, toggle }) {
               <th>Problem</th>
               <th>Rating</th>
               <th>Role</th>
+              <th>Topic</th>
               <th>Tags</th>
             </tr>
           </thead>
@@ -79,7 +86,7 @@ export default function FullList({ plan, done, toggle }) {
               return (
                 <tr key={p.id} className={isDone ? 'done' : ''}>
                   <td>
-                    <input type="checkbox" className="chk" checked={isDone} onChange={() => toggle(p.id)} />
+                    <input type="checkbox" className="chk" style={{ marginTop: 0 }} checked={isDone} onChange={() => toggle(p.id)} />
                   </td>
                   <td className="mono">{p.day}</td>
                   <td>
@@ -91,8 +98,12 @@ export default function FullList({ plan, done, toggle }) {
                   <td className="mono" style={{ color: ratingColor(p.rating) }}>
                     {p.rating}
                   </td>
-                  <td style={{ textTransform: 'capitalize' }}>{p.role}</td>
-                  <td className="tg">{p.tags.map(prettyTag).join(', ')}</td>
+                  <td className="mono" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--muted)' }}>
+                    {p.role || '—'}
+                    {p.ladderStep ? ` ${p.ladderStep}/${p.ladderTotal}` : ''}
+                  </td>
+                  <td style={{ fontStyle: 'italic', color: 'var(--gold-2)' }}>{p.ladderTag ? prettyTag(p.ladderTag) : 'breadth'}</td>
+                  <td className="tg">{(p.tags || []).map(prettyTag).join(', ')}</td>
                 </tr>
               )
             })}
