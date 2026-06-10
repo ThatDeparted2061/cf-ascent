@@ -27,12 +27,12 @@
 // Safe to commit — Firebase web configs are public identifiers; actual
 // security comes from the Firestore rules above.
 const firebaseConfig = {
-  apiKey: 'AIzaSyA5yEEmEIHmvBVcHAAMMpepTbdakf9M0VE',
-  authDomain: 'recall-arena.firebaseapp.com',
-  projectId: 'recall-arena',
-  storageBucket: 'recall-arena.firebasestorage.app',
-  messagingSenderId: '539075940034',
-  appId: '1:539075940034:web:e032506cbf8a658297755b',
+  apiKey: 'AIzaSyAXjtTO9rqYJC6TgsCpk3dFXyIvecRWCT8',
+  authDomain: 'cf-ascent.firebaseapp.com',
+  projectId: 'cf-ascent',
+  storageBucket: 'cf-ascent.firebasestorage.app',
+  messagingSenderId: '643362090740',
+  appId: '1:643362090740:web:282b6943af705bcbaa38a1',
 }
 
 const SIGNED_FLAG = 'cf_ascent_was_signed_in'
